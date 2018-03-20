@@ -39,7 +39,7 @@ char buf[MAX_STR_BUF];
 
 int main(void) {
 
-	int lineCount;
+	int tmp1LineCount;
 
 	// 1.
 	system("find . -type f -name BIO_* -printf '%p\n'>tmp1.txt");
@@ -57,9 +57,10 @@ int main(void) {
 		printf("Error io fpOut~!\n");
 		return 1;
 	}
+
 	while(!feof(fp)){
-		int cnt=0;
-		int i;
+
+		int i,strL;
 		char strField[MAX_STR_BUF];
 		int nTmp,nFieldFatiLevel;
 		memset(str1,0,MAX_STR_BUF);
@@ -68,11 +69,20 @@ int main(void) {
 		memset(buf,0,MAX_STR_BUF);
 
 		//read
-		fscanf(fp,"%s\n",str1);
+		//fscanf(fp,"%s\n",str1);
+		fgets(str1,MAX_STR_BUF,fp);
+		strL = strlen(str1);
+		if(strL>0){
+			str1[strL-1]='\0';
+		} else {
+			printf("skiped line %d [%s]\n",tmp1LineCount,str1);
+			continue;
+		}
+		tmp1LineCount++;
 
 		fp2=fopen(str1,"r");
 		if(!fp2){
-			printf("Error - Can not open file [%s] ~!\n",str1);
+			printf("Error - Can not open file (%d)[%s] ~!\n",tmp1LineCount,str1);
 			return 1;
 		}
 		while(!feof(fp2)){

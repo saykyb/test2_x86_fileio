@@ -20,6 +20,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
 #define MAX_STR_BUF 512
 #define FIELD_LEN   128
 
@@ -36,10 +38,34 @@ char str1[MAX_STR_BUF];
 
 char strTmp[MAX_STR_BUF];
 char buf[MAX_STR_BUF];
+int argSummary =1;
+void usage(char *argv_0)
+{
+	printf("\n");
+	printf("Usage: xxx [OPTION]\n\r\n");
+    printf("   -h,        Help\n");
+    printf("   -d,        detail\n");
 
-int main(void) {
+	exit(1);
+}
+int main(int argc, char **argv){
 
-	int tmp1LineCount;
+	int tmp1LineCount=0;
+	int opt;
+
+	while ((opt = getopt(argc, argv, "dhv")) != -1) {
+		switch (opt) {
+		case 'd':
+			argSummary=0;
+			break;
+		case 'v':
+		case 'h':
+		default:
+			usage(argv[0]);
+			break;
+		}
+	}
+
 
 	// 1.
 	system("find . -type f -name BIO_* -printf '%p\n'>tmp1.txt");
@@ -61,6 +87,7 @@ int main(void) {
 	while(!feof(fp)){
 
 		int i,strL;
+		int sumCnt=0;
 		char strField[MAX_STR_BUF];
 		int nTmp,nFieldFatiLevel;
 		memset(str1,0,MAX_STR_BUF);
@@ -85,6 +112,7 @@ int main(void) {
 			printf("Error - Can not open file (%d)[%s] ~!\n",tmp1LineCount,str1);
 			return 1;
 		}
+
 		while(!feof(fp2)){
 			memset(strField,0,MAX_STR_BUF);
 			fscanf(fp2,"%s\n",strField);
@@ -105,14 +133,27 @@ int main(void) {
 				if(&strField[i++]){
 					nFieldFatiLevel = strField[i] -'0';
 					if(nFieldFatiLevel>0 && nFieldFatiLevel<= 4){
-						snprintf(buf,MAX_STR_BUF,"%s ==>%s\n",str1,strField);
-						fputs(buf,fpOut);
+						if(argSummary){	//
+							sumCnt++;
+						} else {
+							snprintf(buf,MAX_STR_BUF,"%s ==>%s\n",str1,strField);
+							fputs(buf,fpOut);
+						}
 					}
 				} else {
 					printf("check file ~~!\n");
 
 				}
 			}
+		}
+		if(sumCnt>0 && argSummary){	//
+			for(i=0;i<strlen(str1);i++){
+				if(str1[i]=='/'){
+					str1[i]='\\';
+				}
+			}
+			snprintf(buf,MAX_STR_BUF,"%s    ==>cnt:%d\n",str1,sumCnt);
+			fputs(buf,fpOut);
 		}
 		fclose(fp2);
 	}
